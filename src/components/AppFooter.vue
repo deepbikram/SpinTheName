@@ -7,7 +7,6 @@ const hash: string | undefined = import.meta.env.VITE_GIT_HASH;
 const baseUrl = 'https://github.com/jim60105/UnfairSpinWheel';
 const version = ref('v.DEVELOP');
 const url = ref(baseUrl);
-const privacyUrl = baseUrl + '/blob/master/privacy-policy.md';
 
 onMounted(() => {
   if (hash) {

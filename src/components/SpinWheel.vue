@@ -14,33 +14,14 @@
       }
     }"
   />
-  <div ref="container" class="flex spin-container">
-    <picture>
-      <source srcset="/img/image.avif" type="image/avif" />
-      <source srcset="/img/image.webp" type="image/webp" />
-      <img src="/img/image.png" class="image" alt="background image" />
-    </picture>
-    <div
-      class="icon"
-      @click="spin"
-      @keyup.enter="spin"
-      @keyup.space="spin"
-      v-tooltip.bottom="{
-        value: `Spin to select`,
-        class: 'text-xl',
-        escape: true
-      }"
-      tabindex="0"
-    ></div>
-  </div>
+  <div ref="container" class="flex spin-container"></div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, inject, watch } from 'vue';
-import random from 'random';
 import { Wheel, type WheelProps } from 'spin-wheel';
 import { useDialog } from 'primevue/usedialog';
-import { TickSound, LabelLength } from '@/services/SettingService';
+import { LabelLength } from '@/services/SettingService';
 import { GroupLabel, GroupLabels, ItemService, Items } from '@/services/ItemService';
 import CongratulationDialog from '@/components/CongratulationDialog.vue';
 
@@ -92,44 +73,6 @@ const stopAndClearSound = () => {
   wheel.stop();
 };
 
-const playSound = () => {
-  if (!TickSound.value) return;
-
-  var src = TickSound.value.value.startsWith('data:')
-    ? TickSound.value.value
-    : `/sound/${TickSound.value.value}`;
-  const audio = new Audio(src);
-  audio.volume = 0.3;
-  audio.play();
-};
-
-const spin = () => {
-  if (!wheel) return;
-
-  wheel.onCurrentIndexChange = () => {
-    if (!wheel) return;
-
-    playSound();
-
-    // Change rotation resistance based on current speed.
-    // Provide a more entertaining performance.
-    switch (true) {
-      case wheel.rotationSpeed < 400:
-        wheel.rotationResistance = -100;
-        break;
-      case wheel.rotationSpeed < 100:
-        wheel.rotationResistance = -30;
-        break;
-      case wheel.rotationSpeed < 30:
-        wheel.rotationResistance = -10;
-        break;
-    }
-  };
-
-  wheel.rotationResistance = -400;
-  wheel.spin(wheel.rotationSpeed + random.int(1000, 1600));
-};
-
 const dialog = useDialog();
 const openCongratulationDialog = ($event: {
   type: 'rest';
@@ -165,7 +108,7 @@ onMounted(() => {
   wheel.spin(10);
 
   wheel.onRest = ($event) => {
-    stopAndClearSound;
+    stopAndClearSound();
     openCongratulationDialog($event);
   };
 
@@ -204,31 +147,6 @@ onMounted(() => {
   }
 }
 
-.image {
-  object-position: center;
-  object-fit: contain;
-  filter: grayscale(1);
-  opacity: 0.08;
-
-  aspect-ratio: 1/1;
-  width: 200vw;
-  height: 90vh;
-
-  position: absolute;
-  top: calc(calc(50%) - calc(90vh / 2));
-  left: calc(calc(50%) - calc(200vw / 2));
-
-  @media (min-width: map-get($breakpoints, 'sm')) {
-    height: 100vh;
-    top: calc(calc(50%) - calc(100vh / 2));
-  }
-
-  @media (min-width: map-get($breakpoints, 'md')) {
-    height: 110vh;
-    top: calc(calc(50%) - calc(110vh / 2));
-  }
-}
-
 .button-container {
   margin-top: -5.5rem;
 
@@ -245,34 +163,4 @@ onMounted(() => {
   }
 }
 
-.icon {
-  $icon-size: 13vh;
-  cursor: pointer;
-
-  width: $icon-size;
-  height: $icon-size;
-  border-radius: 50%;
-
-  background-image: url(/img/icon.png);
-  background-image: -webkit-image-set(
-    url(/img/icon.avif) type('image/avif'),
-    url(/img/icon.webp) type('image/webp'),
-    url(/img/icon.png) type('image/png')
-  );
-  background-image: image-set(
-    url(/img/icon.avif) type('image/avif'),
-    url(/img/icon.webp) type('image/webp'),
-    url(/img/icon.png) type('image/png')
-  );
-
-  background-size: contain;
-
-  position: absolute;
-  top: calc(calc(50%) - calc($icon-size / 2));
-  left: calc(calc(50%) - calc($icon-size / 2));
-
-  &:hover {
-    filter: brightness(1.05);
-  }
-}
 </style>

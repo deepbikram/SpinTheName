@@ -60,7 +60,7 @@ import SpinWheel from '@/components/SpinWheel.vue';
 import ItemInputGroup from '@/components/sidebar-panel/ItemInputGroup.vue';
 import SidebarPanel from '@/components/sidebar-panel/SidebarPanel.vue';
 import CongratulationDialog from '@/components/CongratulationDialog.vue';
-import Footer from '@/components/Footer.vue';
+import AppFooter from '@/components/AppFooter.vue';
 // ShareLink component removed
 import { ItemService } from '@/services/ItemService';
 import { SidebarService } from '@/services/SidebarService';
@@ -131,7 +131,7 @@ app.component('SpinWheel', SpinWheel);
 app.component('ItemInputGroup', ItemInputGroup);
 app.component('SidebarPanel', SidebarPanel);
 app.component('CongratulationDialog', CongratulationDialog);
-app.component('Footer', Footer);
+app.component('AppFooter', AppFooter);
 // share link component no longer registered
 
 app.mount('#app');

@@ -48,7 +48,7 @@ import FileUpload from 'primevue/fileupload';
 //theme (use neutral light theme; dark mode toggles via `body.dark`)
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.scss';
+import 'primeflex/primeflex.css';
 // shareon (social sharing) removed for educational build
 import '@/assets/app.scss';
 import '@/assets/OBS.scss';

@@ -43,17 +43,17 @@ const properties: WheelProps = {
     '"Source Serif 4", "Source Sans 3", "Noto Sans TC", "Noto Sans SC", "Noto Sans Lao", "Noto Color Emoji"',
   itemLabelFontSizeMax: 55,
   itemBackgroundColors: [
-    '#e8e1d6',
-    '#dfe7e3',
-    '#dbe5f0',
-    '#f1e2d6',
-    '#e3e6ef',
-    '#efe6dc',
-    '#d7e3d9',
-    '#f0ddd6',
-    '#e2e9df',
-    '#eadfd1',
-    '#dbe1ea'
+    '#e74c3c',
+    '#3498db',
+    '#2ecc71',
+    '#f39c12',
+    '#9b59b6',
+    '#1abc9c',
+    '#e67e22',
+    '#2980b9',
+    '#c0392b',
+    '#8e44ad',
+    '#d35400'
   ],
   rotationSpeedMax: 2000,
   lineWidth: 1,
@@ -137,6 +137,12 @@ onMounted(() => {
   margin-top: -3.5rem;
   margin-bottom: -10vh;
   position: relative;
+  background: var(--bg-base);
+  opacity: 1;
+
+  :deep(canvas) {
+    background: var(--bg-base);
+  }
 
   @media (min-width: map-get($breakpoints, 'sm')) {
     height: 100vh;

@@ -56,6 +56,16 @@
             />
           </div>
         </div>
+        <div class="col-12 mt-2">
+          <Button
+            icon="pi pi-refresh"
+            label="Reset All Weights"
+            severity="warning"
+            outlined
+            class="w-full"
+            @click="itemService.resetWeights()"
+          />
+        </div>
         <Divider />
         <div class="p-inputgroup col-12">
           <ToggleButton

@@ -121,6 +121,13 @@ export class ItemService {
     await this.syncItems();
   };
 
+  public async resetWeights() {
+    const items = await this.getItemByGroupLabel(GroupLabel.value!);
+    items.forEach((item) => (item.weight = 1));
+    await this.db.bulkDocs(items);
+    await this.syncItems();
+  }
+
   public async resetGroupLabel() {
     const firstItem = await this.getFirstItem();
     GroupLabel.value = firstItem.group;

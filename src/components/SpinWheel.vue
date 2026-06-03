@@ -1,20 +1,22 @@
 <template>
-  <Dropdown
-    id="group-dropdown"
-    :model-value="GroupLabel"
-    :options="GroupLabels"
-    class="mt-4 z-1"
-    @update:model-value="itemService?.changeGroupLabel"
-    :pt="{
-      input: {
-        class: 'text-xl sm:text-4xl md:text-6xl'
-      },
-      item: {
-        class: 'text-xl sm:text-xl md:text-3xl'
-      }
-    }"
-  />
-  <div ref="container" class="flex spin-container">
+  <div class="spin-root">
+    <Dropdown
+      id="group-dropdown"
+      :model-value="GroupLabel"
+      :options="GroupLabels"
+      class="z-1"
+      @update:model-value="itemService?.changeGroupLabel"
+      :pt="{
+        input: {
+          class: 'text-xl sm:text-4xl md:text-6xl'
+        },
+        item: {
+          class: 'text-xl sm:text-xl md:text-3xl'
+        }
+      }"
+    />
+    <div ref="container" class="spin-container">
+    <div class="arrow"></div>
     <div
       class="spin-button"
       :class="{ disabled: !Items?.length || spinning }"
@@ -28,6 +30,7 @@
       <img src="/img/spin.png" alt="Spin" />
     </div>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -77,6 +80,7 @@ const container = ref();
 const visualItems = () => (Items.value || []).map(item => ({ ...item, weight: 1 }));
 
 let spinning = false;
+let firstLoad = true;
 let wheel: Wheel | undefined = undefined;
 
 const stopAndClearSound = () => {
@@ -148,6 +152,10 @@ onMounted(() => {
   wheel.onRest = ($event) => {
     spinning = false;
     stopAndClearSound();
+    if (firstLoad) {
+      firstLoad = false;
+      return;
+    }
     openCongratulationDialog($event);
   };
 
@@ -165,28 +173,38 @@ onMounted(() => {
 $sm-breakpoint: 576px;
 $md-breakpoint: 768px;
 
-.spin-container {
-  aspect-ratio: 1/1;
-  width: 200vw;
-  height: 90vh;
+.spin-root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 0;
+}
 
-  margin-top: -3.5rem;
-  margin-bottom: -10vh;
+.spin-container {
+  width: min(150vw, 150vh);
+  height: min(150vw, 150vh);
   position: relative;
   background: var(--bg-base);
-  opacity: 1;
 
   :deep(canvas) {
     background: var(--bg-base);
   }
+}
 
-  @media (min-width: $sm-breakpoint) {
-    height: 100vh;
-  }
-
-  @media (min-width: $md-breakpoint) {
-    height: 110vh;
-  }
+.arrow {
+  position: absolute;
+  top: calc(50% - 3rem);
+  left: calc(50% - 0.5rem);
+  z-index: 3;
+  width: 0;
+  height: 0;
+  border-left: 0.5rem solid transparent;
+  border-right: 0.5rem solid transparent;
+  border-bottom: 1rem solid #1f2328;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .spin-button {

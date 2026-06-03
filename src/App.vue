@@ -8,43 +8,43 @@
       </div>
     </template>
   </ConfirmPopup>
-  <ScrollPanel class="h-screen">
-    <div class="max-w-screen overflow-x-hidden overflow-y-hidden">
-      <div class="grid header text-center">
-        <h1 class="col-12 mb-0 text-4xl sm:text-5xl md:text-6xl">
-          <span class="white-space-nowrap">Learning Spin Wheel</span>
-        </h1>
-        <p class="col-12 my-0 py-0 text-base sm:text-lg md:text-2xl" v-if="!Fairmode">
-          <span class="white-space-nowrap">Guide practice with weighted topics</span>
-          &nbsp;<span class="white-space-nowrap">and tidy learning sets.</span>
-        </p>
-        <p class="col-12 my-0 py-0 text-base sm:text-lg md:text-2xl" v-else>
-          <span class="white-space-nowrap">Balanced mode gives every topic</span>
-          &nbsp;<span class="white-space-nowrap">an even chance.</span>
-        </p>
-        <button class="theme-toggle" @click="DarkMode = !DarkMode" aria-label="Toggle theme">
-          <svg v-if="DarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5" />
-            <line x1="12" y1="1" x2="12" y2="3" />
-            <line x1="12" y1="21" x2="12" y2="23" />
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-            <line x1="1" y1="12" x2="3" y2="12" />
-            <line x1="21" y1="12" x2="23" y2="12" />
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-          </svg>
-          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-          </svg>
-        </button>
-      </div>
-      <div class="flex flex-wrap justify-content-center mb-4">
-        <SpinWheel></SpinWheel>
-      </div>
+  <div class="layout">
+    <div class="header text-center">
+      <h1 class="mb-0 text-4xl sm:text-5xl md:text-6xl">
+        <span class="white-space-nowrap">Learning Spin Wheel</span>
+      </h1>
+      <p class="my-0 py-0 text-base sm:text-lg md:text-2xl" v-if="!Fairmode">
+        <span class="white-space-nowrap">Guide practice with weighted topics</span>
+        &nbsp;<span class="white-space-nowrap">and tidy learning sets.</span>
+      </p>
+      <p class="my-0 py-0 text-base sm:text-lg md:text-2xl" v-else>
+        <span class="white-space-nowrap">Balanced mode gives every topic</span>
+        &nbsp;<span class="white-space-nowrap">an even chance.</span>
+      </p>
+      <button class="theme-toggle" @click="DarkMode = !DarkMode" aria-label="Toggle theme">
+        <svg v-if="DarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
     </div>
-    <AppFooter></AppFooter>
-  </ScrollPanel>
+    <div class="wheel-area">
+      <SpinWheel></SpinWheel>
+    </div>
+    <div class="footer-area">
+      <AppFooter></AppFooter>
+    </div>
+  </div>
 
   <SidebarPanel></SidebarPanel>
   <Button
@@ -242,9 +242,20 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+.layout {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
 .header {
   font-family: var(--display-font);
   letter-spacing: 0.02em;
+  flex-shrink: 0;
+  padding-top: 0.5rem;
 
   h1 {
     font-size: xxx-large;
@@ -252,6 +263,17 @@ onMounted(async () => {
   p {
     font-size: large;
   }
+}
+
+.wheel-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.footer-area {
+  flex-shrink: 0;
 }
 
 .confirm-button {

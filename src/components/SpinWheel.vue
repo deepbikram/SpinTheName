@@ -127,7 +127,8 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@import 'primeflex/core/_variables.scss';
+$sm-breakpoint: 576px;
+$md-breakpoint: 768px;
 
 .spin-container {
   aspect-ratio: 1/1;
@@ -144,11 +145,11 @@ onMounted(() => {
     background: var(--bg-base);
   }
 
-  @media (min-width: map-get($breakpoints, 'sm')) {
+  @media (min-width: $sm-breakpoint) {
     height: 100vh;
   }
 
-  @media (min-width: map-get($breakpoints, 'md')) {
+  @media (min-width: $md-breakpoint) {
     height: 110vh;
   }
 }

@@ -80,8 +80,13 @@ const container = ref();
 const visualItems = () => (Items.value || []).map(item => ({ ...item, weight: 1 }));
 
 let spinning = false;
-let firstLoad = true;
 let wheel: Wheel | undefined = undefined;
+
+const idleSlowSpin = () => {
+  if (!wheel) return;
+  wheel.rotationResistance = 0;
+  wheel.spin(6);
+};
 
 const stopAndClearSound = () => {
   if (!wheel) return;
@@ -107,6 +112,7 @@ const spin = () => {
   if (!wheel || spinning || !Items.value?.length) return;
 
   spinning = true;
+  wheel.stop();
 
   const winnerIndex = weightedPick();
   if (winnerIndex === null) return;
@@ -147,17 +153,14 @@ onMounted(() => {
     itemLabelRadiusMax: 1 - LabelLength.value
   });
 
-  wheel.spin(10);
-
   wheel.onRest = ($event) => {
     spinning = false;
     stopAndClearSound();
-    if (firstLoad) {
-      firstLoad = false;
-      return;
-    }
     openCongratulationDialog($event);
+    setTimeout(() => idleSlowSpin(), 100);
   };
+
+  idleSlowSpin();
 
   wheel.onSpin = () => {
     gtag('event', 'spin');
@@ -184,8 +187,8 @@ $md-breakpoint: 768px;
 }
 
 .spin-container {
-  width: min(150vw, 150vh);
-  height: min(150vw, 150vh);
+  width: min(200vw, 200vh);
+  height: min(200vw, 200vh);
   position: relative;
   background: var(--bg-base);
 

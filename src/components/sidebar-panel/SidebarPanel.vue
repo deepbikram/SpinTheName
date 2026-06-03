@@ -224,6 +224,34 @@
               }"
             />
           </div>
+          <div class="col-12 mt-4">
+            <h3 class="text-900 mb-2">Appearance</h3>
+            <label class="block mb-2">Color Palette (comma separated)</label>
+            <Textarea v-model="paletteText" rows="2" />
+            <div class="p-inputgroup mt-2">
+              <Button class="w-full" label="Apply Palette" icon="pi pi-check" @click="applyPalette" />
+            </div>
+
+            <label class="block mt-3 mb-2">Label Font</label>
+            <InputText v-model="ItemLabelFont" />
+
+            <label class="block mt-3 mb-2">Max Label Font Size</label>
+            <Slider v-model="ItemLabelFontSizeMax" :min="12" :max="120" />
+
+            <label class="block mt-3 mb-2">Spin Speed (max)</label>
+            <Slider v-model="RotationSpeedMax" :min="200" :max="6000" step="50" />
+
+            <label class="block mt-3 mb-2">Rotation Resistance (friction)</label>
+            <Slider v-model="RotationResistance" :min="0" :max="1" step="0.01" />
+          </div>
+
+          <div class="col-12 mt-4">
+            <h3 class="text-900 mb-2">Save / Load</h3>
+            <div class="p-inputgroup">
+              <Button label="Export Set" icon="pi pi-download" class="p-button-secondary" @click="exportSet" />
+              <FileUpload mode="basic" accept="application/json" customUpload auto @uploader="importSetUploader" />
+            </div>
+          </div>
         </div>
       </TabPanel>
     </TabView>
@@ -304,6 +332,13 @@ import {
   CongratulationSounds,
   Fairmode,
   DarkMode
+} from '@/services/SettingService';
+import {
+  ItemBackgroundColors,
+  ItemLabelFont,
+  ItemLabelFontSizeMax,
+  RotationSpeedMax,
+  RotationResistance
 } from '@/services/SettingService';
 import ItemInputGroup from '@/components/sidebar-panel/ItemInputGroup.vue';
 import type { IItem } from '@/interface/IItem';
@@ -398,6 +433,46 @@ const toggleBulkEditMode = async ($event: Event) => {
   } else {
     bulkEditMode.value = !bulkEditMode.value;
     await changeBulkEditMode();
+  }
+};
+
+const paletteText = ref(ItemBackgroundColors.value.join(', '));
+
+const applyPalette = () => {
+  const parts = paletteText.value
+    .split(/[,\n]+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+  if (parts.length > 0) ItemBackgroundColors.value = parts;
+};
+
+const exportSet = () => {
+  const json = JSON.stringify(Items.value?.map((i) => ({ label: i.label, weight: i.weight })) || [], null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${GroupLabel.value ?? 'set'}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+
+const importSetUploader = async (event: FileUploadUploaderEvent) => {
+  const file = Array.isArray(event.files) ? event.files[0] : event.files;
+  const text = await file.text();
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) {
+      const items = parsed.map((p: any) => ({ label: p.label || p, weight: p.weight || 1, group: GroupLabel.value!, order: -1 }));
+      await itemService.addItems(items);
+      toast.add({ severity: 'success', summary: 'Imported', detail: 'Set imported' });
+    } else {
+      toast.add({ severity: 'error', summary: 'Import failed', detail: 'Invalid JSON format' });
+    }
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Import failed', detail: (e as Error).message });
   }
 };
 

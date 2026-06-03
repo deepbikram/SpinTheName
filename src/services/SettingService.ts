@@ -69,6 +69,30 @@ export const Fairmode = ref<boolean>(false);
 
 export const DarkMode = ref<boolean>(false);
 
+export const ItemBackgroundColors = ref<string[]>([
+  '#e74c3c',
+  '#3498db',
+  '#2ecc71',
+  '#f39c12',
+  '#9b59b6',
+  '#1abc9c',
+  '#e67e22',
+  '#2980b9',
+  '#c0392b',
+  '#8e44ad',
+  '#d35400'
+]);
+
+export const ItemLabelFont = ref<string>(
+  '"Source Serif 4", "Source Sans 3", "Noto Sans TC", "Noto Sans SC", "Noto Sans Lao", "Noto Color Emoji"'
+);
+
+export const ItemLabelFontSizeMax = ref<number>(55);
+
+export const RotationSpeedMax = ref<number>(2000);
+
+export const RotationResistance = ref<number>(0);
+
 export class SettingService {
   private db: PouchDB.Database<ISetting> = new PouchDB('setting');
 
@@ -83,6 +107,11 @@ export class SettingService {
     await this.initCongratulationSound();
     await this.initFairmode();
     await this.initDarkMode();
+    await this.initItemBackgroundColors();
+    await this.initItemLabelFont();
+    await this.initItemLabelFontSizeMax();
+    await this.initRotationSpeedMax();
+    await this.initRotationResistance();
   };
 
   async initDarkMode() {
@@ -103,6 +132,97 @@ export class SettingService {
       }
     });
   }
+
+  private initItemBackgroundColors = async () => {
+    try {
+      ItemBackgroundColors.value = (await this.getSetting('itemBackgroundColors')).value;
+    } catch (e) {
+      // persist default
+      this.addSetting({ key: 'itemBackgroundColors', value: ItemBackgroundColors.value });
+    }
+
+    watch(ItemBackgroundColors, async (newValue) => {
+      try {
+        const doc = await this.getSetting('itemBackgroundColors');
+        doc.value = newValue;
+        await this.updateSetting(doc);
+      } catch (e) {
+        await this.addSetting({ key: 'itemBackgroundColors', value: newValue });
+      }
+    });
+  };
+
+  private initItemLabelFont = async () => {
+    try {
+      ItemLabelFont.value = (await this.getSetting('itemLabelFont')).value;
+    } catch (e) {
+      this.addSetting({ key: 'itemLabelFont', value: ItemLabelFont.value });
+    }
+
+    watch(ItemLabelFont, async (newValue) => {
+      try {
+        const doc = await this.getSetting('itemLabelFont');
+        doc.value = newValue;
+        await this.updateSetting(doc);
+      } catch (e) {
+        await this.addSetting({ key: 'itemLabelFont', value: newValue });
+      }
+    });
+  };
+
+  private initItemLabelFontSizeMax = async () => {
+    try {
+      ItemLabelFontSizeMax.value = (await this.getSetting('itemLabelFontSizeMax')).value;
+    } catch (e) {
+      this.addSetting({ key: 'itemLabelFontSizeMax', value: ItemLabelFontSizeMax.value });
+    }
+
+    watch(ItemLabelFontSizeMax, async (newValue) => {
+      try {
+        const doc = await this.getSetting('itemLabelFontSizeMax');
+        doc.value = newValue;
+        await this.updateSetting(doc);
+      } catch (e) {
+        await this.addSetting({ key: 'itemLabelFontSizeMax', value: newValue });
+      }
+    });
+  };
+
+  private initRotationSpeedMax = async () => {
+    try {
+      RotationSpeedMax.value = (await this.getSetting('rotationSpeedMax')).value;
+    } catch (e) {
+      this.addSetting({ key: 'rotationSpeedMax', value: RotationSpeedMax.value });
+    }
+
+    watch(RotationSpeedMax, async (newValue) => {
+      try {
+        const doc = await this.getSetting('rotationSpeedMax');
+        doc.value = newValue;
+        await this.updateSetting(doc);
+      } catch (e) {
+        await this.addSetting({ key: 'rotationSpeedMax', value: newValue });
+      }
+    });
+  };
+
+  private initRotationResistance = async () => {
+    try {
+      RotationResistance.value = (await this.getSetting('rotationResistance')).value;
+    } catch (e) {
+      this.addSetting({ key: 'rotationResistance', value: RotationResistance.value });
+    }
+
+    watch(RotationResistance, async (newValue) => {
+      try {
+        const doc = await this.getSetting('rotationResistance');
+        doc.value = newValue;
+        await this.updateSetting(doc);
+      } catch (e) {
+        await this.addSetting({ key: 'rotationResistance', value: newValue });
+      }
+    });
+  };
 
   private prefetchAudio = (audioSetting: AudioSetting | undefined) => {
     if (!audioSetting) return;

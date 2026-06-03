@@ -37,7 +37,16 @@
 import { ref, onMounted, inject, watch } from 'vue';
 import { Wheel, type WheelProps } from 'spin-wheel';
 import { useDialog } from 'primevue/usedialog';
-import { LabelLength } from '@/services/SettingService';
+import {
+  LabelLength,
+  ItemBackgroundColors,
+  ItemLabelFont,
+  ItemLabelFontSizeMax,
+  RotationSpeedMax,
+  RotationResistance,
+  TickSound,
+  CongratulationSound
+} from '@/services/SettingService';
 import { GroupLabel, GroupLabels, ItemService, Items } from '@/services/ItemService';
 import CongratulationDialog from '@/components/CongratulationDialog.vue';
 
@@ -54,22 +63,10 @@ const properties: WheelProps = {
   itemLabelColors: ['#fff'],
   itemLabelBaselineOffset: -0.07,
   itemLabelFont:
-    '"Source Serif 4", "Source Sans 3", "Noto Sans TC", "Noto Sans SC", "Noto Sans Lao", "Noto Color Emoji"',
-  itemLabelFontSizeMax: 55,
-  itemBackgroundColors: [
-    '#e74c3c',
-    '#3498db',
-    '#2ecc71',
-    '#f39c12',
-    '#9b59b6',
-    '#1abc9c',
-    '#e67e22',
-    '#2980b9',
-    '#c0392b',
-    '#8e44ad',
-    '#d35400'
-  ],
-  rotationSpeedMax: 2000,
+    ItemLabelFont.value,
+  itemLabelFontSizeMax: ItemLabelFontSizeMax.value,
+  itemBackgroundColors: ItemBackgroundColors.value,
+  rotationSpeedMax: RotationSpeedMax.value,
   lineWidth: 1,
   lineColor: '#fff',
   items: []
@@ -81,6 +78,9 @@ const visualItems = () => (Items.value || []).map(item => ({ ...item, weight: 1 
 
 let spinning = false;
 let wheel: Wheel | undefined = undefined;
+let spinCount = 0;
+let tickAudio: HTMLAudioElement | undefined = undefined;
+let congratsAudio: HTMLAudioElement | undefined = undefined;
 
 const idleSlowSpin = () => {
   if (!wheel) return;
@@ -146,6 +146,21 @@ onMounted(() => {
   watch(LabelLength, (newValue) => {
     wheel!.itemLabelRadiusMax = 1 - newValue;
   });
+  watch(ItemBackgroundColors, (newValue) => {
+    wheel!.itemBackgroundColors = newValue;
+  });
+  watch(ItemLabelFont, (newValue) => {
+    wheel!.itemLabelFont = newValue;
+  });
+  watch(ItemLabelFontSizeMax, (newValue) => {
+    wheel!.itemLabelFontSizeMax = newValue;
+  });
+  watch(RotationSpeedMax, (newValue) => {
+    wheel!.rotationSpeedMax = newValue;
+  });
+  watch(RotationResistance, (newValue) => {
+    wheel!.rotationResistance = newValue;
+  });
 
   wheel = new Wheel(container.value, {
     ...properties,
@@ -157,6 +172,18 @@ onMounted(() => {
     spinning = false;
     stopAndClearSound();
     openCongratulationDialog($event);
+    if (CongratulationSound.value) {
+      try {
+        congratsAudio = new Audio(
+          CongratulationSound.value.value.startsWith('data:')
+            ? CongratulationSound.value.value
+            : `/sound/${CongratulationSound.value.value}`
+        );
+        congratsAudio.play().catch(() => {});
+      } catch (e) {
+        // ignore
+      }
+    }
     setTimeout(() => idleSlowSpin(), 100);
   };
 
@@ -164,6 +191,19 @@ onMounted(() => {
 
   wheel.onSpin = () => {
     gtag('event', 'spin');
+    gtag('event', 'spin_count', {
+      count: ++spinCount
+    });
+    if (TickSound.value) {
+      try {
+        tickAudio = new Audio(
+          TickSound.value.value.startsWith('data:') ? TickSound.value.value : `/sound/${TickSound.value.value}`
+        );
+        tickAudio.play().catch(() => {});
+      } catch (e) {
+        // ignore
+      }
+    }
   };
 
   setTimeout(() => {

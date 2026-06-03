@@ -270,6 +270,8 @@ onMounted(async () => {
   min-height: 0;
   display: flex;
   overflow: hidden;
+  align-items: center;
+  justify-content: center;
 }
 
 .footer-area {

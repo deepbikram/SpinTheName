@@ -12,7 +12,7 @@
     }"
   >
     <template #header>
-      <h2><i class="pi pi-palette"></i> Classroom Setup</h2>
+      <h2><i class="pi pi-palette"></i> Setup</h2>
     </template>
     <TabView
       :scrollable="true"
@@ -23,7 +23,6 @@
       }"
     >
       <TabPanel header="📚 Topics">
-        
         <div class="col-12 mt-2">
           <Button
             icon="pi pi-refresh"
@@ -35,62 +34,28 @@
           />
         </div>
         <Divider />
-        <div class="p-inputgroup col-12">
-          <ToggleButton
-            :modelValue="bulkEditMode"
-            @change="toggleBulkEditMode"
-            class="w-full border-round"
-            onLabel="Save"
-            offLabel="Bulk Edit"
-            onIcon="pi pi-check"
-            offIcon="pi pi-pencil"
-            :pt="{
-              icon: {
-                class: ['flex', 'flex-auto', 'flex-row-reverse']
-              },
-              label: {
-                class: ['flex']
-              }
-            }"
-          />
+        <div
+          v-focustrap="{
+            disabled: Items?.length === 0
+          }"
+        >
+          <ItemInputGroup
+            :class="['col-12']"
+            v-for="item in Items"
+            :key="item._id"
+            :modelValue="item"
+          ></ItemInputGroup>
         </div>
-        <template v-if="!bulkEditMode">
-          <div
-            v-focustrap="{
-              disabled: Items?.length === 0
-            }"
-          >
-            <ItemInputGroup
-              :class="['col-12']"
-              v-for="item in Items"
-              :key="item._id"
-              :modelValue="item"
-            ></ItemInputGroup>
-          </div>
-          <div class="p-inputgroup col-12">
-            <Button
-              ref="addButton"
-              class="w-full"
-              icon="pi pi-plus"
-              severity="success"
-              outlined
-              aria-label="Add topic"
-              @click="addItem"
-            />
-          </div>
-        </template>
-        <div v-else class="m-2">
-          <Textarea v-model="textArea" />
-          <small class="text-color-secondary"
-            >This feature uses
-            <a
-              href="https://en.wikipedia.org/wiki/Comma-separated_values#Basic_rules"
-              target="_blank"
-              rel="noopener"
-              >the CSV syntax</a
-            >
-            with two columns.</small
-          >
+        <div class="p-inputgroup col-12">
+          <Button
+            ref="addButton"
+            class="w-full"
+            icon="pi pi-plus"
+            severity="success"
+            outlined
+            aria-label="Add topic"
+            @click="addItem"
+          />
         </div>
       </TabPanel>
       <TabPanel header="⚙️ Settings">
@@ -98,7 +63,7 @@
           <div class="col-12">
             <label for="dd-sound" class="block mb-2">Ticking Sound</label>
             <div class="grid">
-              <div class="col-8">
+              <div class="col-12">
                 <Dropdown
                   v-model="TickSound"
                   inputId="dd-sound"
@@ -109,48 +74,20 @@
                   class="w-full"
                 />
               </div>
-              <div class="col-4">
-                <FileUpload
-                  mode="basic"
-                  accept="audio/*,.webm"
-                  customUpload
-                  auto
-                  @uploader="customBase64Uploader($event, 'TickSound')"
-                  :pt="{
-                    chooseButton: {
-                      class: 'w-full'
-                    }
-                  }"
-                />
-              </div>
             </div>
           </div>
           <div class="col-12">
-            <label for="dd-sound" class="block mb-2">Completion Sound</label>
+            <label for="dd-sound-congrats" class="block mb-2">Completion Sound</label>
             <div class="grid">
-              <div class="col-8">
+              <div class="col-12">
                 <Dropdown
                   v-model="CongratulationSound"
-                  inputId="dd-sound"
+                  inputId="dd-sound-congrats"
                   :options="CongratulationSounds"
                   optionLabel="label"
                   optionGroupLabel="label"
                   optionGroupChildren="items"
                   class="w-full"
-                />
-              </div>
-              <div class="col-4">
-                <FileUpload
-                  mode="basic"
-                  accept="audio/*,.webm"
-                  customUpload
-                  auto
-                  @uploader="customBase64Uploader($event, 'CongratulationSound')"
-                  :pt="{
-                    chooseButton: {
-                      class: 'w-full'
-                    }
-                  }"
                 />
               </div>
             </div>
@@ -166,9 +103,10 @@
             />
           </div>
           <div class="col-12">
-            <label for="sl-labelLength" class="block mb-2">Balanced Mode</label>
+            <label for="sl-fairmode" class="block mb-2">Balanced Mode</label>
             <ToggleButton
               v-model="Fairmode"
+              inputId="sl-fairmode"
               @change="
                 () => {
                   itemService.syncItems();
@@ -185,6 +123,7 @@
             <label for="sl-darkmode" class="block mb-2">Dark Mode</label>
             <ToggleButton
               v-model="DarkMode"
+              inputId="sl-darkmode"
               :pt="{
                 root: {
                   class: 'w-full'
@@ -212,296 +151,70 @@
             <label class="block mt-3 mb-2">Rotation Resistance (friction)</label>
             <Slider v-model="RotationResistance" :min="0" :max="1" step="0.01" />
           </div>
-
-          <div class="col-12 mt-4">
-            <h3 class="text-900 mb-2">Save / Load</h3>
-            <div class="p-inputgroup">
-              <Button label="Export Set" icon="pi pi-download" class="p-button-secondary" @click="exportSet" />
-              <FileUpload mode="basic" accept="application/json" customUpload auto @uploader="importSetUploader" />
-            </div>
-          </div>
         </div>
       </TabPanel>
     </TabView>
-
-    <Dialog v-model:visible="showRenameGroupDialog" modal dismissableMask header="Header">
-      <template #container>
-        <form class="surface-card border-round shadow-2 p-4 max-w-screen" @submit.prevent>
-          <div class="text-900 font-medium mb-2 text-xl">Rename Set</div>
-          <p class="min-w-min text-color-secondary">Keep it clear and short.</p>
-          <div class="flex mb-4 flex-column lg:flex-row">
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-pencil" />
-              <InputText
-                autofocus
-                v-model="renameGroupName"
-                placeholder="New Set Name"
-                :pt="{
-                  root: { class: 'w-full' }
-                }"
-              />
-            </span>
-          </div>
-          <Button
-            type="submit"
-            class="confirm-button"
-            icon="pi pi-check"
-            label="Ok"
-            severity="success"
-            @click="renameGroup"
-          ></Button>
-        </form>
-      </template>
-    </Dialog>
-    <Dialog v-model:visible="showAddGroupDialog" modal dismissableMask header="Header">
-      <template #container>
-        <form class="surface-card border-round shadow-2 p-4 max-w-screen" @submit.prevent>
-          <div class="text-900 font-medium mb-2 text-xl">Add Set</div>
-          <p class="min-w-min text-color-secondary">Name this learning set.</p>
-          <div class="flex mb-4 flex-column lg:flex-row">
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-plus" />
-              <InputText
-                autofocus
-                v-model="addGroupName"
-                placeholder="New Set Name"
-                :pt="{
-                  root: { class: 'w-full' }
-                }"
-              />
-            </span>
-          </div>
-          <Button
-            type="submit"
-            class="confirm-button"
-            icon="pi pi-check"
-            label="Ok"
-            severity="success"
-            @click="addGroup"
-          ></Button>
-        </form>
-      </template>
-    </Dialog>
   </Sidebar>
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, ref, watch } from 'vue';
-import type { FileUploadUploaderEvent } from 'primevue/fileupload';
-import { useConfirm } from 'primevue/useconfirm';
-import { useToast } from 'primevue/usetoast';
-import { ItemService, GroupLabel, GroupLabels, Items } from '@/services/ItemService';
-import { VisibleSidebar } from '@/services/SidebarService';
+import { inject, ref, watch } from 'vue';
+import { ItemService, Items } from '@/services/ItemService';
+import { SidebarService, VisibleSidebar } from '@/services/SidebarService';
 import {
   TickSound,
   TickSounds,
-  LabelLength,
   CongratulationSound,
   CongratulationSounds,
+  LabelLength,
   Fairmode,
-  DarkMode
-} from '@/services/SettingService';
-import {
+  DarkMode,
   ItemBackgroundColors,
   ItemLabelFont,
   ItemLabelFontSizeMax,
   RotationSpeedMax,
   RotationResistance
 } from '@/services/SettingService';
-import ItemInputGroup from '@/components/sidebar-panel/ItemInputGroup.vue';
 import type { IItem } from '@/interface/IItem';
-import { StringHelper } from '@/helpers/StringHelper';
 
-const itemService = inject<ItemService>('ItemService')!;
-const toast = useToast();
+const itemService = inject<ItemService>('ItemService') as ItemService;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const sidebarService = inject<SidebarService>('SidebarService');
 
-const addButton = ref();
-const confirm = useConfirm();
-const bulkEditMode = ref(false);
-const textArea = ref('');
-
-async function addItem() {
-  await itemService.addItem();
+const addItem = () => {
+  itemService.addItem();
   setTimeout(() => {
-    addButton.value.$el.scrollIntoView({ behavior: 'smooth' });
-  }, 100);
-}
-
-const removeGroup = ($event: Event) => {
-  if ($event.target instanceof HTMLElement)
-    confirm.require({
-      target: $event.target || undefined,
-      message: 'Remove this set and its topics?',
-      icon: 'pi pi-exclamation-triangle text-yellow-400',
-      accept: async () => {
-        await itemService.removeGroup(GroupLabel.value!);
-      }
-    });
-};
-
-const showRenameGroupDialog = ref(false);
-const renameGroupName = ref(GroupLabel.value);
-const renameGroup = async () => {
-  await itemService.renameGroup(GroupLabel.value!, renameGroupName.value!);
-  showRenameGroupDialog.value = false;
-};
-
-const showAddGroupDialog = ref(false);
-const addGroupName = ref('');
-const addGroup = async () => {
-  await itemService.changeGroupLabel(addGroupName.value);
-  await itemService.addItem();
-  GroupLabels.value = await itemService.getGroupLabels();
-  showAddGroupDialog.value = false;
-  addGroupName.value = '';
-};
-
-const customBase64Uploader = async (
-  event: FileUploadUploaderEvent,
-  mode: 'TickSound' | 'CongratulationSound'
-) => {
-  const file = Array.isArray(event.files) ? event.files[0] : event.files;
-  const reader = new FileReader();
-  let blob = await fetch(window.URL.createObjectURL(file)).then((r) => r.blob()); //blob:url
-
-  reader.readAsDataURL(blob);
-
-  reader.onloadend = function () {
-    const base64data = reader.result;
-    console.debug('Sound uploaded', base64data);
-    if (mode === 'TickSound') {
-      TickSound.value = {
-        label: file.name,
-        value: base64data as string
-      };
-    } else if (mode === 'CongratulationSound') {
-      CongratulationSound.value = {
-        label: file.name,
-        value: base64data as string
-      };
-    }
-  };
-};
-
-const toggleBulkEditMode = async ($event: Event) => {
-  if (!bulkEditMode.value && Fairmode.value && $event.target instanceof HTMLElement) {
-    confirm.require({
-      target: $event.target || undefined,
-      message: 'Weights reset to 1 when you bulk edit in balanced mode.',
-      icon: 'pi pi-exclamation-triangle text-yellow-400',
-      defaultFocus: 'reject',
-      accept: async () => {
-        bulkEditMode.value = true;
-        await changeBulkEditMode();
-      },
-      reject: () => {
-        bulkEditMode.value = false;
-      }
-    });
-  } else {
-    bulkEditMode.value = !bulkEditMode.value;
-    await changeBulkEditMode();
-  }
-};
-
-const paletteText = ref(ItemBackgroundColors.value.join(', '));
-
-const applyPalette = () => {
-  const parts = paletteText.value
-    .split(/[,\n]+/)
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0);
-  if (parts.length > 0) ItemBackgroundColors.value = parts;
-};
-
-const exportSet = () => {
-  const json = JSON.stringify(Items.value?.map((i) => ({ label: i.label, weight: i.weight })) || [], null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${GroupLabel.value ?? 'set'}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-};
-
-const importSetUploader = async (event: FileUploadUploaderEvent) => {
-  const file = Array.isArray(event.files) ? event.files[0] : event.files;
-  const text = await file.text();
-  try {
-    const parsed = JSON.parse(text);
-    if (Array.isArray(parsed)) {
-      const items = parsed.map((p: any) => ({ label: p.label || p, weight: p.weight || 1, group: GroupLabel.value!, order: -1 }));
-      await itemService.addItems(items);
-      toast.add({ severity: 'success', summary: 'Imported', detail: 'Set imported' });
-    } else {
-      toast.add({ severity: 'error', summary: 'Import failed', detail: 'Invalid JSON format' });
-    }
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Import failed', detail: (e as Error).message });
-  }
-};
-
-const changeBulkEditMode = async () => {
-  if (bulkEditMode.value) {
-    textArea.value = badCSV ?? StringHelper.csvStringify();
-    badCSV = undefined;
-    console.debug('Bulk edit mode on');
-  } else {
-    console.debug('Bulk edit mode off');
-
-    let items: IItem[] = [];
-    try {
-      items = StringHelper.csvParse(textArea.value, true).map(({ label, weight }) => ({
-        label: label,
-        weight: +weight < 1 ? 1 : +weight,
-        group: GroupLabel.value!,
-        order: -1
-      }));
-      toast.removeAllGroups();
-    } catch (error) {
-      const e = error as Error;
-      console.error('Error parsing items from textarea', e);
-      toast.add({
-        severity: 'error',
-        summary: 'CSV parsed failed!',
-        detail: e.message
+    const list = document.querySelector('.p-tabview-panels');
+    if (list) {
+      list.scrollTo({
+        top: list.scrollHeight,
+        behavior: 'smooth'
       });
-
-      badCSV = textArea.value;
-      bulkEditMode.value = true;
-      return;
     }
-    console.debug('Items parsed from textarea', items);
-
-    await itemService.cleanUpGroup(GroupLabel.value!);
-    await itemService.addItems(items);
-  }
+  }, 100);
 };
 
-let badCSV: string | undefined = undefined;
-onMounted(() => {
-  watch(GroupLabel, () => {
-    renameGroupName.value = GroupLabel.value;
-  });
+const paletteText = ref<string>(ItemBackgroundColors.value.join(', '));
+const applyPalette = () => {
+  ItemBackgroundColors.value = paletteText.value
+    .split(',')
+    .map((c) => c.trim())
+    .filter((c) => c);
+};
+
+watch(ItemBackgroundColors, (newValue) => {
+  paletteText.value = newValue.join(', ');
 });
+
+const GroupLabel = ref('');
 </script>
 
-<style scoped>
-.confirm-button {
-  float: right;
+<style lang="scss" scoped>
+:deep(.p-tabview-panels) {
+  padding: 0 1rem !important;
 }
 
-textarea {
-  width: -webkit-fill-available;
-  resize: vertical;
-  min-height: 50vh;
-  font-size: larger;
-}
-
-h2 {
-  font-weight: 400;
+:deep(.p-sidebar-header) {
+  padding: 1.25rem 1rem 0 1rem !important;
 }
 </style>

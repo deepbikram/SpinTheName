@@ -76,19 +76,6 @@ export class ItemService {
     await this.syncItems();
   };
 
-  public addItems = async (items: IItem[]) => {
-    const all = loadAll();
-    const docs = items.map((item, i) => ({
-      ...item,
-      _id: genId(),
-      order: all.length + i
-    }));
-    all.push(...docs);
-    saveAll(all);
-    await this.syncGroups();
-    await this.syncItems();
-  };
-
   private insertTemplateItems = () => {
     const all = templateItems.map((t) => ({ ...t, _id: genId() }));
     saveAll(all);
@@ -135,21 +122,6 @@ export class ItemService {
     await this.syncItems();
   }
 
-  public async renameGroup(oldGroupLabel: string, newGroupLabel: string) {
-    if (newGroupLabel === oldGroupLabel) return;
-
-    const all = loadAll();
-    all.forEach((item) => {
-      if (item.group === oldGroupLabel) {
-        item.group = newGroupLabel;
-      }
-    });
-    saveAll(all);
-
-    await this.syncGroups();
-    await this.changeGroupLabel(newGroupLabel);
-  }
-
   public async updateItem(item: IItem) {
     const all = loadAll();
     const idx = all.findIndex((i) => i._id === item._id);
@@ -165,19 +137,6 @@ export class ItemService {
 
   public removeItem = async (item: IItem) => {
     const all = loadAll().filter((i) => i._id !== item._id);
-    saveAll(all);
-    await this.syncItems();
-  };
-
-  public removeGroup = async (groupLabel: string) => {
-    if (groupLabel === this._firstItem?.group) this._firstItem = undefined;
-
-    await this.cleanUpGroup(groupLabel);
-    await this.resetGroupLabel();
-  };
-
-  public cleanUpGroup = async (groupLabel: string) => {
-    const all = loadAll().filter((item) => item.group !== groupLabel);
     saveAll(all);
     await this.syncItems();
   };

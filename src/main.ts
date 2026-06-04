@@ -1,12 +1,8 @@
 /* eslint-disable vue/multi-word-component-names */
 /* eslint-disable vue/no-reserved-component-names */
 
-/*
- * I have noticed that there are malicious individuals who steal our website content and add malicious code to collect user location and send back to the their own server.
- * To protect against such actions, we will implement a mechanism to verify the host when the webpage is being loaded, and if necessary, redirect users to the appropriate website when they access the proxy site.
- * Please be aware that you are solely permitted to distribute this project under the "AGPL-3.0" license.
- * If you have adhered to the terms of this license, you are welcome to make modifications to this section as needed.
- */
+// Note: Upstream builds included host verification / redirect logic.
+// This fork intentionally removes all forced redirects so it can be hosted on any domain.
 
 import { createApp } from 'vue';
 import App from '@/App.vue';
@@ -67,8 +63,7 @@ app.use(PrimeVue, {
 });
 app.use(ConfirmationService);
 
-// PouchDB
-// https://pouchdb.com/guides/databases.html
+// PouchDB (local persistence)
 const settingService = new SettingService();
 await settingService.init();
 app.provide('SettingService', settingService);

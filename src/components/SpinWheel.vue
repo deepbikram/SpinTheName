@@ -190,10 +190,6 @@ onMounted(() => {
   idleSlowSpin();
 
   wheel.onSpin = () => {
-    gtag('event', 'spin');
-    gtag('event', 'spin_count', {
-      count: ++spinCount
-    });
     if (TickSound.value) {
       try {
         tickAudio = new Audio(

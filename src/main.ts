@@ -40,19 +40,13 @@ import FileUpload from 'primevue/fileupload';
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
-// shareon (social sharing) removed for educational build
 import '@/assets/app.scss';
-import '@/assets/OBS.scss';
-if (navigator.userAgent.indexOf('OBS') !== -1) {
-  document.body.classList.add('obs');
-}
 
 import SpinWheel from '@/components/SpinWheel.vue';
 import ItemInputGroup from '@/components/sidebar-panel/ItemInputGroup.vue';
 import SidebarPanel from '@/components/sidebar-panel/SidebarPanel.vue';
 import CongratulationDialog from '@/components/CongratulationDialog.vue';
-import AppFooter from '@/components/AppFooter.vue';
-// ShareLink component removed
+
 import { ItemService } from '@/services/ItemService';
 import { SidebarService } from '@/services/SidebarService';
 import { SettingService, DarkMode } from '@/services/SettingService';
@@ -120,7 +114,5 @@ app.component('SpinWheel', SpinWheel);
 app.component('ItemInputGroup', ItemInputGroup);
 app.component('SidebarPanel', SidebarPanel);
 app.component('CongratulationDialog', CongratulationDialog);
-app.component('AppFooter', AppFooter);
-// share link component no longer registered
 
 app.mount('#app');

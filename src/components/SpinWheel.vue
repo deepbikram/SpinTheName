@@ -168,7 +168,7 @@ onMounted(() => {
     itemLabelRadiusMax: 1 - LabelLength.value
   });
 
-  wheel.onRest = ($event) => {
+  wheel.onRest = ($event: { type: 'rest'; currentIndex: number; rotation: number }) => {
     spinning = false;
     stopAndClearSound();
     openCongratulationDialog($event);

@@ -146,10 +146,10 @@
             <Slider v-model="ItemLabelFontSizeMax" :min="12" :max="120" />
 
             <label class="block mt-3 mb-2">Spin Speed (max)</label>
-            <Slider v-model="RotationSpeedMax" :min="200" :max="6000" step="50" />
+            <Slider v-model="RotationSpeedMax" :min="200" :max="6000" :step="50" />
 
             <label class="block mt-3 mb-2">Rotation Resistance (friction)</label>
-            <Slider v-model="RotationResistance" :min="0" :max="1" step="0.01" />
+            <Slider v-model="RotationResistance" :min="0" :max="1" :step="0.01" />
           </div>
         </div>
       </TabPanel>

@@ -236,8 +236,8 @@ $md-breakpoint: 768px;
 }
 
 .spin-container {
-  width: min(200vw, 200vh);
-  height: min(200vw, 200vh);
+  width: min(140vw, 140vh);
+  height: min(140vw, 140vh);
   position: relative;
   background: var(--bg-base);
 

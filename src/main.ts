@@ -7,10 +7,13 @@
  * Please be aware that you are solely permitted to distribute this project under the "AGPL-3.0" license.
  * If you have adhered to the terms of this license, you are welcome to make modifications to this section as needed.
  */
-if (
-  !window.location.hostname.endsWith('spin-wheel.click') &&
-  window.location.hostname !== 'localhost'
-) {
+const allowedHosts = new Set<string>([
+  'localhost',
+  'myspinwheel.netlify.app',
+  'spin.enotesnepal.com'
+]);
+
+if (!window.location.hostname.endsWith('spin-wheel.click') && !allowedHosts.has(window.location.hostname)) {
   window.location.href =
     'https://unfair.spin-wheel.click' + window.location.pathname + window.location.search;
 }
@@ -18,7 +21,6 @@ if (
 import { createApp } from 'vue';
 import App from '@/App.vue';
 import PrimeVue from 'primevue/config';
-import PouchDB from 'pouchdb-browser';
 
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';

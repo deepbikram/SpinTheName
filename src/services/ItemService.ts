@@ -1,56 +1,55 @@
 import { ref } from 'vue';
-import PouchDB from 'pouchdb-browser';
 import type { IItem } from '@/interface/IItem';
 import { templateItems } from '@/assets/TemplateData';
 import { Fairmode } from './SettingService';
 
+const STORAGE_KEY = 'spin-items';
+
 export const GroupLabel = ref<string>();
 export const GroupLabels = ref<string[]>([]);
-export const Items = ref<PouchDB.Core.ExistingDocument<IItem>[]>();
+export const Items = ref<IItem[]>();
+
+function genId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function loadAll(): IItem[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAll(items: IItem[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}
 
 export class ItemService {
-  // https://pouchdb.com/guides/compact-and-destroy.html#auto-compaction
-  private db: PouchDB.Database<IItem> = new PouchDB('item', { auto_compaction: true });
-
   async init() {
-    // const dbInfo = await this.db.info();
-    // if (dbInfo.doc_count !== 0) {
-    //   this.db.compact();
-    // }
-
+    let all = loadAll();
+    if (all.length === 0) {
+      all = templateItems.map((t) => ({ ...t, _id: genId() }));
+      saveAll(all);
+    }
     await this.resetGroupLabel();
     Items.value = await this.getItems();
   }
 
-  public getItemCount = async () => (await this.db.info()).doc_count;
-
   public getGroupLabels = async (): Promise<string[]> => [
-    ...new Set(
-      (await this.db.allDocs<IItem>({ include_docs: true })).rows
-        .map((row) => row.doc!.group)
-        .filter((group) => !!group)
-        .sort()
-    )
+    ...new Set(loadAll().map((item) => item.group).filter(Boolean).sort())
   ];
 
-  public getItems = async (): Promise<PouchDB.Core.ExistingDocument<IItem>[]> =>
+  public getItems = async (): Promise<IItem[]> =>
     this.getItemByGroupLabel(GroupLabel.value || (await this.getFirstItem()).group);
 
-  public getItemByGroupLabel = async (
-    groupLabel: string
-  ): Promise<PouchDB.Core.ExistingDocument<IItem>[]> =>
-    (
-      await this.db.find({
-        selector: {
-          group: groupLabel
-        },
-        // default is 25
-        limit: 10000
-      })
-    ).docs
+  public getItemByGroupLabel = async (groupLabel: string): Promise<IItem[]> =>
+    loadAll()
+      .filter((item) => item.group === groupLabel)
       .sort((a, b) => a.order - b.order)
       .map((p) => {
-        const copy = Object.assign({}, p);
+        const copy = { ...p };
         if (Fairmode.value) {
           copy.weight = 1;
         }
@@ -60,56 +59,53 @@ export class ItemService {
   private syncGroups = async () => (GroupLabels.value = await this.getGroupLabels());
   public syncItems = async () => (Items.value = await this.getItems());
 
-  public addItem = async (item?: IItem): Promise<PouchDB.Core.Response> => {
-    if (!item)
+  public addItem = async (item?: IItem) => {
+    const all = loadAll();
+    if (!item) {
       item = {
         group: GroupLabel.value ?? 'New Set',
         label: 'New Topic',
         weight: 1,
-        order: (await this.getItemCount()) ?? 0
+        order: all.length
       };
-
-    const doc = item as PouchDB.Core.ExistingDocument<IItem>;
-    const result = await this.db.post(doc);
+    }
+    const doc = { ...item, _id: item._id || genId() };
+    all.push(doc);
+    saveAll(all);
     await this.syncGroups();
     await this.syncItems();
-    return result;
   };
 
-  public addItems = async (
-    items: IItem[]
-  ): Promise<(PouchDB.Core.Error | PouchDB.Core.Response)[]> => {
-    let count = await this.getItemCount();
-    const docs = items.map((item) => ({
-      group: item.group,
-      label: item.label,
-      weight: item.weight,
-      order: count++
+  public addItems = async (items: IItem[]) => {
+    const all = loadAll();
+    const docs = items.map((item, i) => ({
+      ...item,
+      _id: genId(),
+      order: all.length + i
     }));
-    const result = await this.db.bulkDocs(docs);
-
+    all.push(...docs);
+    saveAll(all);
     await this.syncGroups();
     await this.syncItems();
-    return result;
   };
 
-  private insertTemplateItems = (): Promise<(PouchDB.Core.Error | PouchDB.Core.Response)[]> =>
-    this.db.bulkDocs(templateItems);
+  private insertTemplateItems = () => {
+    const all = templateItems.map((t) => ({ ...t, _id: genId() }));
+    saveAll(all);
+  };
 
-  private _firstItem: PouchDB.Core.ExistingDocument<IItem> | undefined;
+  private _firstItem: IItem | undefined;
 
-  public async getFirstItem(): Promise<PouchDB.Core.ExistingDocument<IItem>> {
+  public async getFirstItem(): Promise<IItem> {
     if (this._firstItem) return this._firstItem;
 
-    const item = (await this.db.allDocs<IItem>({ include_docs: true })).rows
-      .sort((a, b) => a.doc!.order - b.doc!.order)
-      .shift();
-    if (!item) {
-      await this.insertTemplateItems();
-      await this.syncItems();
-      return this.getFirstItem()!;
+    const all = loadAll().sort((a, b) => a.order - b.order);
+    if (all.length === 0) {
+      this.insertTemplateItems();
+      Items.value = await this.getItems();
+      return this.getFirstItem();
     } else {
-      this._firstItem = item.doc;
+      this._firstItem = all[0];
       return this._firstItem!;
     }
   }
@@ -122,9 +118,13 @@ export class ItemService {
   };
 
   public async resetWeights() {
-    const items = await this.getItemByGroupLabel(GroupLabel.value!);
-    items.forEach((item) => (item.weight = 1));
-    await this.db.bulkDocs(items);
+    const all = loadAll();
+    all.forEach((item) => {
+      if (item.group === GroupLabel.value) {
+        item.weight = 1;
+      }
+    });
+    saveAll(all);
     await this.syncItems();
   }
 
@@ -138,35 +138,35 @@ export class ItemService {
   public async renameGroup(oldGroupLabel: string, newGroupLabel: string) {
     if (newGroupLabel === oldGroupLabel) return;
 
-    const items: PouchDB.Core.ExistingDocument<IItem & PouchDB.Core.ChangesMeta>[] =
-      await this.getItemByGroupLabel(oldGroupLabel);
-    items.forEach((item) => (item.group = newGroupLabel));
-    await this.db.bulkDocs(items);
+    const all = loadAll();
+    all.forEach((item) => {
+      if (item.group === oldGroupLabel) {
+        item.group = newGroupLabel;
+      }
+    });
+    saveAll(all);
 
     await this.syncGroups();
     await this.changeGroupLabel(newGroupLabel);
   }
 
-  public async updateItem(
-    item: PouchDB.Core.ExistingDocument<IItem>
-  ): Promise<PouchDB.Core.Response> {
-    const doc = await this.db.get(item._id);
-    if (doc.label === item.label && doc.weight === item.weight)
-      return Promise.resolve({} as PouchDB.Core.Response);
+  public async updateItem(item: IItem) {
+    const all = loadAll();
+    const idx = all.findIndex((i) => i._id === item._id);
+    if (idx === -1) return;
 
-    doc.label = item.label;
-    if (!Fairmode.value) doc.weight = item.weight;
-    const result = await this.db.put(item);
+    if (all[idx].label === item.label && all[idx].weight === item.weight) return;
+
+    all[idx].label = item.label;
+    if (!Fairmode.value) all[idx].weight = item.weight;
+    saveAll(all);
     await this.syncItems();
-    return result;
   }
 
-  public removeItem = async (item: PouchDB.Core.ExistingDocument<IItem>) => {
-    const _item: PouchDB.Core.ExistingDocument<IItem & PouchDB.Core.ChangesMeta> = item;
-    _item._deleted = true;
-    const result = await this.db.put(_item);
+  public removeItem = async (item: IItem) => {
+    const all = loadAll().filter((i) => i._id !== item._id);
+    saveAll(all);
     await this.syncItems();
-    return result;
   };
 
   public removeGroup = async (groupLabel: string) => {
@@ -177,10 +177,8 @@ export class ItemService {
   };
 
   public cleanUpGroup = async (groupLabel: string) => {
-    const items: PouchDB.Core.ExistingDocument<IItem & PouchDB.Core.ChangesMeta>[] =
-      await this.getItemByGroupLabel(groupLabel);
-    items.forEach((item) => (item._deleted = true));
-    await this.db.bulkDocs(items);
+    const all = loadAll().filter((item) => item.group !== groupLabel);
+    saveAll(all);
     await this.syncItems();
   };
 }

@@ -11,11 +11,11 @@
   <div class="layout">
     <div class="header text-center">
       <h1 class="mb-0 text-4xl sm:text-5xl md:text-6xl">
-        <span class="white-space-nowrap">Learning Spin Wheel</span>
+        <span class="white-space-nowrap">Spin The Name</span>
       </h1>
       <p class="my-0 py-0 text-base sm:text-lg md:text-2xl" v-if="!Fairmode">
-        <span class="white-space-nowrap">Guide practice with weighted topics</span>
-        &nbsp;<span class="white-space-nowrap">and tidy learning sets.</span>
+        <span class="white-space-nowrap">Life is Unfair.</span>
+        &nbsp;<span class="white-space-nowrap">Just Like Our Wheel.😈</span>
       </p>
       <p class="my-0 py-0 text-base sm:text-lg md:text-2xl" v-else>
         <span class="white-space-nowrap">Balanced mode gives every topic</span>

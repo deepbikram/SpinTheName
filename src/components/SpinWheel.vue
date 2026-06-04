@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, watch } from 'vue';
+import { ref, onMounted, onUnmounted, inject, watch } from 'vue';
 import { Wheel, type WheelProps } from 'spin-wheel';
 import { useDialog } from 'primevue/usedialog';
 import {
@@ -131,8 +131,8 @@ const openCongratulationDialog = ($event: {
     props: {
       modal: true,
       showHeader: false,
-      style: 'border: 0',
-      contentStyle: 'border: 0; backgroundColor: transparent',
+      style: 'border: 0; background: transparent; box-shadow: none',
+      contentStyle: 'border: 0; background: transparent',
       dismissableMask: true
     },
     data: {
@@ -209,6 +209,15 @@ onMounted(() => {
   setTimeout(() => {
     wheel!.itemLabelRadiusMax = 1 - LabelLength.value;
   }, 50);
+
+  const onKey = (e: KeyboardEvent) => {
+    if (e.code === 'Space' && !spinning && Items.value?.length && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement)) {
+      e.preventDefault();
+      spin();
+    }
+  };
+  document.addEventListener('keydown', onKey);
+  onUnmounted(() => document.removeEventListener('keydown', onKey));
 });
 </script>
 

@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, ref, onMounted } from 'vue';
+import { inject, ref, watch, onMounted } from 'vue';
 import { ItemService } from '@/services/ItemService';
 import { Fairmode } from '@/services/SettingService';
 
@@ -52,6 +52,9 @@ const itemService = inject<ItemService>('ItemService');
 const label = ref(props.modelValue.label);
 const weight = ref(props.modelValue.weight);
 const focusMe = ref();
+
+watch(() => props.modelValue.label, (v) => { label.value = v; });
+watch(() => props.modelValue.weight, (v) => { weight.value = v; });
 
 function updateLabel(value: Event) {
   const input = value.target as HTMLInputElement;

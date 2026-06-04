@@ -18,7 +18,6 @@ if (
 import { createApp } from 'vue';
 import App from '@/App.vue';
 import PrimeVue from 'primevue/config';
-import PouchDBFind from 'pouchdb-find';
 import PouchDB from 'pouchdb-browser';
 
 import InputText from 'primevue/inputtext';
@@ -84,8 +83,6 @@ app.use(ConfirmationService);
 
 // PouchDB
 // https://pouchdb.com/guides/databases.html
-PouchDB.plugin(PouchDBFind);
-
 const settingService = new SettingService();
 await settingService.init();
 app.provide('SettingService', settingService);

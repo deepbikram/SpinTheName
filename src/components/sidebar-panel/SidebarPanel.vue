@@ -23,39 +23,7 @@
       }"
     >
       <TabPanel header="📚 Topics">
-        <div class="col-12">
-          <label for="dd-group" class="block mb-2">Choose a Set</label>
-          <div class="p-inputgroup">
-            <Button
-              icon="pi pi-trash"
-              severity="danger"
-              outlined
-              aria-label="Remove set"
-              @click="removeGroup"
-              tabindex="-1"
-            />
-            <Dropdown
-              :model-value="GroupLabel"
-              inputId="dd-group"
-              :options="GroupLabels"
-              @update:model-value="itemService.changeGroupLabel"
-            />
-            <Button
-              icon="pi pi-pencil"
-              severity="info"
-              outlined
-              aria-label="Rename set"
-              @click="showRenameGroupDialog = true"
-            />
-            <Button
-              icon="pi pi-plus"
-              severity="success"
-              outlined
-              aria-label="Add set"
-              @click="showAddGroupDialog = true"
-            />
-          </div>
-        </div>
+        
         <div class="col-12 mt-2">
           <Button
             icon="pi pi-refresh"

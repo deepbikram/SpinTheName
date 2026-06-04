@@ -175,7 +175,6 @@ import {
   RotationSpeedMax,
   RotationResistance
 } from '@/services/SettingService';
-import type { IItem } from '@/interface/IItem';
 
 const itemService = inject<ItemService>('ItemService') as ItemService;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -205,8 +204,6 @@ const applyPalette = () => {
 watch(ItemBackgroundColors, (newValue) => {
   paletteText.value = newValue.join(', ');
 });
-
-const GroupLabel = ref('');
 </script>
 
 <style lang="scss" scoped>
